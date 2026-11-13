@@ -14,3 +14,6 @@ Upload/scan (Claude reads PDFs and images, with page sources) · editable confir
 
 ## Prototype limits / next
 Data lives in browser localStorage (no accounts, no HIPAA-grade storage); caregiver/doctor views are simulated on one device; reminders only fire while the app is open (needs push/SMS, e.g. Twilio); Fitbit integration not built; no auth or encryption yet.
+
+## Deploy (Render)
+Push to GitHub → Render → New → Blueprint → select this repo (uses `render.yaml`). Add `ANTHROPIC_API_KEY` in the dashboard. Health check: `/healthz`. AI endpoints are rate limited (`RATE_LIMIT_PER_MIN`, default 10/IP).

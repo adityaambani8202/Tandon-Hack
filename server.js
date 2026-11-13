@@ -4,7 +4,20 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
+app.set("trust proxy", 1);
 app.use(express.static("public"));
+app.get("/healthz", (_req, res) => res.send("ok"));
+
+// Simple in-memory rate limit for the paid AI endpoints (per IP, per minute).
+const hits = new Map();
+const LIMIT = Number(process.env.RATE_LIMIT_PER_MIN || 10);
+function rateLimit(req, res, next) {
+  const now = Date.now(), h = (hits.get(req.ip) || []).filter(t => now - t < 60000);
+  if (h.length >= LIMIT) return res.status(429).json({ error: "Too many requests. Please wait a minute." });
+  h.push(now); hits.set(req.ip, h); next();
+}
+setInterval(() => { const now = Date.now(); for (const [ip, h] of hits) if (!h.some(t => now - t < 60000)) hits.delete(ip); }, 60000).unref();
+const ALLOWED = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 const PROMPT = `You extract structured data from hospital discharge paperwork. Return ONLY valid JSON, no prose:
 {
@@ -17,11 +30,12 @@ const PROMPT = `You extract structured data from hospital discharge paperwork. R
 }
 Only include what is written in the document. Never invent or give medical advice. Use null/empty when unknown.`;
 
-app.post("/api/extract", upload.single("file"), async (req, res) => {
+app.post("/api/extract", rateLimit, upload.single("file"), async (req, res) => {
   if (!process.env.ANTHROPIC_API_KEY) return res.json({ demo: true, plan: samplePlan() });
   try {
     const f = req.file;
     if (!f) return res.status(400).json({ error: "No file uploaded" });
+    if (!ALLOWED.has(f.mimetype)) return res.status(400).json({ error: "Please upload a PDF or a JPG/PNG photo." });
     const b64 = f.buffer.toString("base64");
     const block = f.mimetype === "application/pdf"
       ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: b64 } }
@@ -42,7 +56,7 @@ app.post("/api/extract", upload.single("file"), async (req, res) => {
 });
 
 app.use(express.json());
-app.post("/api/meals", async (req, res) => {
+app.post("/api/meals", rateLimit, async (req, res) => {
   const rules = (req.body.rules || []).slice(0, 10);
   const fallback = { meals: [
     { day: "Day 1", breakfast: "Oatmeal with berries (no added salt)", lunch: "Grilled chicken salad, olive oil and lemon", dinner: "Baked salmon, steamed broccoli, brown rice", grocery: ["oats", "berries", "chicken breast", "salmon", "broccoli"] },
@@ -81,4 +95,5 @@ function samplePlan() {
 }
 
 const port = process.env.PORT || 3000;
+app.use((err, _req, res, _next) => res.status(400).json({ error: err.code === "LIMIT_FILE_SIZE" ? "File too large (max 20 MB)." : "Upload failed." }));
 app.listen(port, () => console.log(`http://localhost:${port}`));
