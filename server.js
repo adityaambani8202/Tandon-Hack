@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
@@ -19,9 +20,32 @@ function rateLimit(req, res, next) {
 setInterval(() => { const now = Date.now(); for (const [ip, h] of hits) if (!h.some(t => now - t < 60000)) hits.delete(ip); }, 60000).unref();
 const ALLOWED = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-const HAS_AI = () => !!(process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY);
-// Claude if ANTHROPIC_API_KEY is set, else Gemini (free tier) if GEMINI_API_KEY is set.
+const HAS_AI = () => !!(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY);
+// Priority: Claude > OpenAI > Gemini
 async function askModel({ prompt, file, max = 4096, json = true }) {
+  if (process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const content = [];
+    if (file) {
+      const b64 = file.buffer.toString("base64");
+      if (file.mimetype === "application/pdf") {
+        // gpt-4o supports PDF via file upload
+        content.push({ type: "text", text: `[PDF document provided as base64 — extract from it]\n${prompt}` });
+      } else {
+        content.push({ type: "image_url", image_url: { url: `data:${file.mimetype};base64,${b64}`, detail: "high" } });
+        content.push({ type: "text", text: prompt });
+      }
+    } else {
+      content.push({ type: "text", text: prompt });
+    }
+    const msg = await client.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o",
+      max_tokens: max,
+      messages: [{ role: "user", content }],
+      ...(json ? { response_format: { type: "json_object" } } : {}),
+    });
+    return msg.choices[0].message.content || "";
+  }
   if (process.env.ANTHROPIC_API_KEY) {
     const content = [];
     if (file) {
@@ -34,7 +58,7 @@ async function askModel({ prompt, file, max = 4096, json = true }) {
     const msg = await new Anthropic().messages.create({ model: "claude-sonnet-5-5", max_tokens: max, messages: [{ role: "user", content }] });
     return msg.content.filter(c => c.type === "text").map(c => c.text).join("");
   }
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const parts = [];
   if (file) parts.push({ inline_data: { mime_type: file.mimetype, data: file.buffer.toString("base64") } });
   parts.push({ text: prompt });
@@ -48,16 +72,35 @@ async function askModel({ prompt, file, max = 4096, json = true }) {
   return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("");
 }
 
-const PROMPT = `You extract structured data from hospital discharge paperwork. Return ONLY valid JSON, no prose:
+const PROMPT = `You extract structured data from hospital discharge paperwork. Return ONLY valid JSON, no prose, matching this schema exactly:
 {
- "medications":[{"name":"","dose":"","timesPerDay":1,"times":["08:00"],"withFood":"with|without|any","durationDays":null,"instructions":"","plainLanguage":"","source":"page N","sourceQuote":"exact words from the document"}],
- "appointments":[{"title":"","date":"YYYY-MM-DD","time":"HH:MM","location":"","prep":"","source":"page N","sourceQuote":"exact words from the document"}],
- "diet":[{"rule":"","plainLanguage":"","source":"page N","sourceQuote":"exact words from the document"}],
- "activity":[{"rule":"","plainLanguage":"","source":"page N","sourceQuote":"exact words from the document"}],
- "exercises":[{"name":"","frequency":"","source":"page N","sourceQuote":"exact words from the document"}],
- "redFlags":[{"symptom":"","keywords":["fever"],"source":"page N","sourceQuote":"exact words from the document"}]
+ "medications":[{
+   "name":"",
+   "dose":"",
+   "timesPerDay":1,
+   "times":["08:00"],
+   "withFood":"with|without|any",
+   "durationDays":null,
+   "taperSteps":[],
+   "instructions":"",
+   "plainLanguage":"plain English explanation of this medication for a patient",
+   "source":"page N",
+   "sourceQuote":"exact verbatim words from the document"
+ }],
+ "appointments":[{"title":"","date":"YYYY-MM-DD","time":"HH:MM","location":"","prep":"","source":"page N","sourceQuote":""}],
+ "diet":[{"rule":"","plainLanguage":"","source":"page N","sourceQuote":""}],
+ "activity":[{"rule":"","plainLanguage":"","source":"page N","sourceQuote":""}],
+ "exercises":[{"name":"","sets":null,"reps":null,"frequency":"","source":"page N","sourceQuote":""}],
+ "redFlags":[{"symptom":"","keywords":[""],"source":"page N","sourceQuote":""}]
 }
-Only include what is written in the document. For every item, sourceQuote must be the exact, verbatim text it came from. Never invent or give medical advice. Use null/empty when unknown.`;
+
+Rules:
+- For taperSteps: if the medication has a tapering schedule (e.g. "10 mg for 3 days, then 5 mg for 3 days"), fill taperSteps as [{"dose":"10 mg","days":3},{"dose":"5 mg","days":3}] and set dose to "varies (see taper)". Otherwise leave taperSteps as [].
+- sourceQuote must be the exact verbatim text from the document for every item.
+- plainLanguage must be a simple 1-2 sentence explanation a 70-year-old patient can understand.
+- Only include what is written in the document. Never infer, invent, or give medical advice.
+- Use null for unknown numbers, empty string for unknown text.
+- Times must be 24-hour HH:MM format.`;
 
 app.post("/api/extract", rateLimit, upload.single("file"), async (req, res) => {
   if (!HAS_AI()) return res.json({ demo: true, plan: samplePlan() });
@@ -123,7 +166,8 @@ function samplePlan() {
     medications: [
       { name: "Lisinopril", dose: "10 mg", timesPerDay: 1, times: ["08:00"], withFood: "any", durationDays: null, instructions: "Take 1 tablet by mouth daily for hypertension", sourceQuote: "Lisinopril 10 mg: Take 1 tablet by mouth daily for hypertension", plainLanguage: "Blood pressure pill. One each morning.", source: "page 1" },
       { name: "Metformin", dose: "500 mg", timesPerDay: 2, times: ["08:00", "20:00"], withFood: "with", durationDays: null, instructions: "Take 1 tablet BID with meals", sourceQuote: "Metformin 500 mg: Take 1 tablet BID with meals", plainLanguage: "Diabetes pill. Morning and evening, with food.", source: "page 1" },
-      { name: "Amoxicillin", dose: "500 mg", timesPerDay: 3, times: ["08:00", "14:00", "22:00"], withFood: "any", durationDays: 7, instructions: "Take 1 capsule TID x 7 days", sourceQuote: "Amoxicillin 500 mg: Take 1 capsule TID x 7 days", plainLanguage: "Antibiotic. Three times a day for 7 days, then stop.", source: "page 2" },
+      { name: "Amoxicillin", dose: "500 mg", timesPerDay: 3, times: ["08:00", "14:00", "22:00"], withFood: "any", durationDays: 7, taperSteps: [], instructions: "Take 1 capsule TID x 7 days", sourceQuote: "Amoxicillin 500 mg: Take 1 capsule TID x 7 days", plainLanguage: "Antibiotic. Three times a day for 7 days, then stop.", source: "page 2" },
+      { name: "Prednisone", dose: "varies (see taper)", timesPerDay: 1, times: ["08:00"], withFood: "with", durationDays: null, taperSteps: [{"dose":"20 mg","days":3},{"dose":"10 mg","days":3},{"dose":"5 mg","days":3}], instructions: "Taper as directed", sourceQuote: "Prednisone taper: 20 mg x3d, then 10 mg x3d, then 5 mg x3d (with food)", plainLanguage: "Steroid pill to reduce inflammation. Take with food. The dose decreases every 3 days — do not stop suddenly.", source: "page 2" },
     ],
     appointments: [
       { title: "Cardiology follow-up", date: d(7), time: "10:30", location: "NYU Langone, 550 First Ave", prep: "Bring medication list. Do not eat after midnight.", source: "page 3", sourceQuote: "Cardiology follow-up in 1 week. NPO after midnight. Bring med list." },

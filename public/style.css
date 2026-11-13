@@ -1,22 +1,94 @@
-:root{--bg:#f6f8fb;--card:#fff;--ink:#1a2233;--mut:#5b667a;--pri:#1d5fd6;--ok:#1e8e4e;--warn:#c27a00;--bad:#c0292b;--line:#dde3ee}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1420;--card:#19202f;--ink:#eef2fa;--mut:#9aa7bd;--line:#2a3347;--pri:#6ea0ff}}
-*{box-sizing:border-box}body{margin:0;font:20px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px;background:var(--card);border-bottom:1px solid var(--line)}
-h1{font-size:1.3rem;margin:0}h2{font-size:1.2rem;margin:.2rem 0 .6rem}
-nav{display:flex;gap:8px;flex-wrap:wrap}
+/* ── Tokens ───────────────────────────────────────────────── */
+:root{--bg:#f6f8fb;--card:#fff;--ink:#1a2233;--mut:#5b667a;--pri:#1d5fd6;--ok:#1e8e4e;--warn:#c27a00;--bad:#c0292b;--line:#dde3ee;--r:14px}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#19202f;--ink:#eef2fa;--mut:#9aa7bd;--line:#2a3347;--pri:#6ea0ff}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#19202f;--ink:#eef2fa;--mut:#9aa7bd;--line:#2a3347;--pri:#6ea0ff}
+
+/* ── Reset & base ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font:20px/1.6 system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+
+/* ── Layout ───────────────────────────────────────────────── */
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+h1{font-size:1.25rem;margin:0}
+h2{font-size:1.15rem;margin:.2rem 0 .6rem}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{padding:8px 12px;min-height:40px;font-size:.8em}
 main{max-width:760px;margin:0 auto;padding:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-button{font:inherit;font-weight:600;padding:12px 18px;border-radius:12px;border:2px solid var(--pri);background:var(--pri);color:#fff;cursor:pointer;min-height:48px}
-button.ghost{background:transparent;color:var(--pri)}button.ok{background:var(--ok);border-color:var(--ok)}button.bad{background:transparent;color:var(--bad);border-color:var(--bad)}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card-label{font-size:.75em;color:var(--mut);margin-bottom:6px}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+button{font:inherit;font-weight:600;padding:12px 20px;border-radius:12px;border:2px solid var(--pri);background:var(--pri);color:#fff;cursor:pointer;min-height:48px;min-width:48px;touch-action:manipulation}
+button.ghost{background:transparent;color:var(--pri)}
+button.ok{background:var(--ok);border-color:var(--ok)}
+button.bad{background:transparent;color:var(--bad);border-color:var(--bad)}
 button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-input,select,textarea{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1 1 auto}.row>button{flex:0 0 auto}
-.dose{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
-.dose:first-of-type{border-top:0}.time{font-weight:700;min-width:80px}.mut{color:var(--mut);font-size:.85em}
-.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.8em;font-weight:700}
-.t-ok{background:#d6f3e1;color:#0e6b36}.t-bad{background:#fbdcdc;color:#8d1b1d}.t-warn{background:#fdecc8;color:#7a4b00}
+button.sm{padding:8px 14px;font-size:.9em;min-height:40px}
+button.btn-full{width:100%;margin-top:8px;display:block}
+button:disabled{opacity:.5;cursor:not-allowed}
+.badge{display:inline-block;background:var(--bad);color:#fff;border-radius:99px;font-size:.65em;font-weight:800;padding:1px 6px;margin-left:4px;vertical-align:middle}
+
+/* ── Forms ───────────────────────────────────────────────── */
+input,select,textarea{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--pri);outline-offset:1px}
+label{display:block;font-size:.85em;color:var(--mut);margin:10px 0 3px}
+
+/* ── Row layout ──────────────────────────────────────────── */
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 140px}
+.row>button{flex:0 0 auto;align-self:flex-end}
+
+/* ── Dose rows ───────────────────────────────────────────── */
+.dose{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.dose:first-of-type{border-top:0}
+.dose-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.time{font-weight:700;min-width:72px;font-variant-numeric:tabular-nums}
+
+/* ── Timeline sections ───────────────────────────────────── */
+.section-header{font-size:.78em;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;padding:10px 0 4px;border-top:1px solid var(--line);margin-top:4px}
+.section-header:first-child{border-top:0;margin-top:0}
+
+/* ── Tags & pills ────────────────────────────────────────── */
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.78em;font-weight:700;white-space:nowrap}
+.t-ok{background:#d6f3e1;color:#0e6b36}
+.t-bad{background:#fbdcdc;color:#8d1b1d}
+.t-warn{background:#fdecc8;color:#7a4b00}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+
+/* ── Alerts ──────────────────────────────────────────────── */
+.emergency{background:#c0292b;color:#fff;border-radius:12px;padding:16px;margin-bottom:14px;font-weight:700;font-size:1.05em}
+.emergency a{color:#fff;text-decoration:underline}
 .alert{border:2px solid var(--bad);background:#fbdcdc;color:#6b0f11;border-radius:12px;padding:14px;margin-bottom:14px;font-weight:600}
 .banner{background:#fdecc8;color:#5c3900;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:.85em}
-label{display:block;font-size:.85em;color:var(--mut);margin:8px 0 2px}
-.hero h1{font-size:1.7rem;line-height:1.2}.steps{display:flex;gap:10px;flex-wrap:wrap}.steps>div{flex:1 1 140px;background:var(--bg);border-radius:10px;padding:10px;font-size:.85em}
-nav button{padding:8px 12px;min-height:40px;font-size:.75em}
+.refill-warn{background:#fdecc8;color:#7a4b00;border:1px solid #f5d78e;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-weight:600}
+.warn-card{border-left:4px solid var(--warn)}
+
+/* ── Hero (upload) ───────────────────────────────────────── */
+.hero{text-align:center;padding:32px 24px}
+.hero-icon{font-size:3rem;margin-bottom:12px}
+.hero p{max-width:480px;margin:0 auto 16px}
+
+/* ── Misc ─────────────────────────────────────────────────── */
+.mut{color:var(--mut)}
+.small{font-size:.85em}
+.prep-note{font-size:.85em;color:var(--mut);margin-top:2px}
+.rule-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.rule-row:first-of-type{border-top:0}
+.meal-day{padding:10px 0;border-top:1px solid var(--line);line-height:1.8}
+.meal-day:first-child{border-top:0}
+.meal-day b{display:block;margin-bottom:4px}
+
+/* ── Adherence chart ─────────────────────────────────────── */
+.chart-wrap{margin:8px 0 4px}
+.chart-legend{display:flex;gap:14px;font-size:.78em;color:var(--mut);margin-top:4px;flex-wrap:wrap}
+
+/* ── 7-dot day track ─────────────────────────────────────── */
+.day-track{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0}
+.day-cell{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.7em;color:var(--mut)}
+.day-pip{width:24px;height:24px;border-radius:50%;background:var(--line)}
+.day-pip.ok{background:var(--ok)}
+.day-pip.bad{background:var(--bad)}
+.day-pip.warn{background:var(--warn)}
+.day-pip.part{background:linear-gradient(135deg,var(--ok) 50%,var(--warn) 50%)}
