@@ -19,6 +19,35 @@ function rateLimit(req, res, next) {
 setInterval(() => { const now = Date.now(); for (const [ip, h] of hits) if (!h.some(t => now - t < 60000)) hits.delete(ip); }, 60000).unref();
 const ALLOWED = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"]);
 
+const HAS_AI = () => !!(process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY);
+// Claude if ANTHROPIC_API_KEY is set, else Gemini (free tier) if GEMINI_API_KEY is set.
+async function askModel({ prompt, file, max = 4096 }) {
+  if (process.env.ANTHROPIC_API_KEY) {
+    const content = [];
+    if (file) {
+      const data = file.buffer.toString("base64");
+      content.push(file.mimetype === "application/pdf"
+        ? { type: "document", source: { type: "base64", media_type: "application/pdf", data } }
+        : { type: "image", source: { type: "base64", media_type: file.mimetype, data } });
+    }
+    content.push({ type: "text", text: prompt });
+    const msg = await new Anthropic().messages.create({ model: "claude-sonnet-5-5", max_tokens: max, messages: [{ role: "user", content }] });
+    return msg.content.filter(c => c.type === "text").map(c => c.text).join("");
+  }
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const parts = [];
+  if (file) parts.push({ inline_data: { mime_type: file.mimetype, data: file.buffer.toString("base64") } });
+  parts.push({ text: prompt });
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+    body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseMimeType: "application/json", maxOutputTokens: max } }),
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error?.message || "Gemini request failed");
+  return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("");
+}
+
 const PROMPT = `You extract structured data from hospital discharge paperwork. Return ONLY valid JSON, no prose:
 {
  "medications":[{"name":"","dose":"","timesPerDay":1,"times":["08:00"],"withFood":"with|without|any","durationDays":null,"instructions":"","plainLanguage":"","source":"page N"}],
@@ -31,22 +60,12 @@ const PROMPT = `You extract structured data from hospital discharge paperwork. R
 Only include what is written in the document. Never invent or give medical advice. Use null/empty when unknown.`;
 
 app.post("/api/extract", rateLimit, upload.single("file"), async (req, res) => {
-  if (!process.env.ANTHROPIC_API_KEY) return res.json({ demo: true, plan: samplePlan() });
+  if (!HAS_AI()) return res.json({ demo: true, plan: samplePlan() });
   try {
     const f = req.file;
     if (!f) return res.status(400).json({ error: "No file uploaded" });
     if (!ALLOWED.has(f.mimetype)) return res.status(400).json({ error: "Please upload a PDF or a JPG/PNG photo." });
-    const b64 = f.buffer.toString("base64");
-    const block = f.mimetype === "application/pdf"
-      ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: b64 } }
-      : { type: "image", source: { type: "base64", media_type: f.mimetype, data: b64 } };
-    const client = new Anthropic();
-    const msg = await client.messages.create({
-      model: "claude-sonnet-5-5",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: [block, { type: "text", text: PROMPT }] }],
-    });
-    const text = msg.content.filter(c => c.type === "text").map(c => c.text).join("");
+    const text = await askModel({ prompt: PROMPT, file: f });
     const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
     res.json({ demo: false, plan: json });
   } catch (e) {
@@ -61,12 +80,10 @@ app.post("/api/meals", rateLimit, async (req, res) => {
   const fallback = { meals: [
     { day: "Day 1", breakfast: "Oatmeal with berries (no added salt)", lunch: "Grilled chicken salad, olive oil and lemon", dinner: "Baked salmon, steamed broccoli, brown rice", grocery: ["oats", "berries", "chicken breast", "salmon", "broccoli"] },
     { day: "Day 2", breakfast: "Plain yogurt with banana", lunch: "Lentil soup (homemade, low sodium)", dinner: "Turkey and vegetable stir-fry", grocery: ["yogurt", "lentils", "turkey", "mixed vegetables"] } ] };
-  if (!process.env.ANTHROPIC_API_KEY) return res.json({ demo: true, ...fallback });
+  if (!HAS_AI()) return res.json({ demo: true, ...fallback });
   try {
-    const client = new Anthropic();
-    const msg = await client.messages.create({ model: "claude-sonnet-5-5", max_tokens: 2000, messages: [{ role: "user", content:
-      `Diet rules from a patient's discharge papers: ${JSON.stringify(rules)}. Suggest a 3-day sample meal plan that follows them strictly. Return ONLY JSON: {"meals":[{"day":"","breakfast":"","lunch":"","dinner":"","grocery":[""]}]}. These are suggestions only; do not give medical advice.` }] });
-    const t = msg.content.filter(c => c.type === "text").map(c => c.text).join("");
+    const t = await askModel({ max: 2000, prompt:
+      `Diet rules from a patient's discharge papers: ${JSON.stringify(rules)}. Suggest a 3-day sample meal plan that follows them strictly. Return ONLY JSON: {"meals":[{"day":"","breakfast":"","lunch":"","dinner":"","grocery":[""]}]}. These are suggestions only; do not give medical advice.` });
     res.json({ demo: false, ...JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

@@ -5,7 +5,9 @@ Scan discharge paperwork (PDF or photo) → extract meds, appointments, diet, ac
 ## Run
 ```
 npm install
-export ANTHROPIC_API_KEY=...   # optional; without it the app uses sample data
+export ANTHROPIC_API_KEY=...   # optional: Claude
+export GEMINI_API_KEY=...      # optional free-tier alternative (Google AI Studio)
+# with neither key, the app uses sample data
 npm start                      # http://localhost:3000
 ```
 
