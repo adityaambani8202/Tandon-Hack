@@ -66,7 +66,7 @@ const PROMPT = `You extract structured data from hospital discharge paperwork. R
 Only include what is written in the document. For every item, sourceQuote must be the exact, verbatim text it came from. Never invent or give medical advice. Use null/empty when unknown.`;
 
 app.post("/api/extract", rateLimit, upload.single("file"), async (req, res) => {
-  if (!HAS_AI()) return res.json({ demo: true, plan: samplePlan() });
+  if (req.query.demo || !HAS_AI()) return res.json({ demo: true, plan: samplePlan() });
   try {
     const f = req.file;
     if (!f) return res.status(400).json({ error: "No file uploaded" });

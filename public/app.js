@@ -39,7 +39,7 @@ function upload() {
     $("#msg").textContent = "Reading your papers…";
     const fd = new FormData(); if (file) fd.append("file", file);
     try {
-      const r = await fetch("/api/extract", { method: "POST", body: fd }); const j = await r.json();
+      const r = await fetch("/api/extract" + (file ? "" : "?demo=1"), { method: "POST", body: fd }); const j = await r.json();
       if (!r.ok) throw new Error(j.error);
       state.plan = j.plan; state.demo = j.demo; state.confirmed = false; persist(); render();
     } catch (e) { $("#msg").textContent = "Error: " + e.message; }
