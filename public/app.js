@@ -9,7 +9,7 @@ let state = { plan: load("plan", null), confirmed: load("confirmed", false), sta
   checkins: load("checkins", []), view: "today", large: load("large", false), voice: load("voice", false), demo: false };
 const persist = () => { for (const k of ["plan", "confirmed", "start", "log", "checkins", "large", "voice"]) save(k, state[k]); };
 
-const views = { today: "Today", checkin: "Check-in", calendar: "Appointments", diet: "Diet & Activity", caregiver: "Caregiver", doctor: "Doctor", settings: "Plan" };
+const views = { today: "Today", ask: "Ask", checkin: "Check-in", calendar: "Appointments", diet: "Diet & Activity", caregiver: "Caregiver", doctor: "Doctor", settings: "Plan" };
 function nav() {
   $("#nav").innerHTML = state.confirmed ? Object.entries(views).map(([k, v]) =>
     `<button class="${state.view === k ? "on" : "ghost"}" data-v="${k}">${v}</button>`).join("") : "";
@@ -21,16 +21,20 @@ function render() {
   nav();
   if (!state.plan) return upload();
   if (!state.confirmed) return confirmScreen();
-  ({ today: viewToday, checkin: viewCheckin, calendar: viewCalendar, diet: viewDiet, caregiver: viewCaregiver, doctor: viewDoctor, settings: viewSettings })[state.view]();
+  ({ today: viewToday, ask: viewAsk, checkin: viewCheckin, calendar: viewCalendar, diet: viewDiet, caregiver: viewCaregiver, doctor: viewDoctor, settings: viewSettings })[state.view]();
 }
 
 /* ---------- Upload ---------- */
 function upload() {
-  $("#app").innerHTML = `<div class="card"><h2>Scan your discharge papers</h2>
+  $("#app").innerHTML = `<div class="card hero"><h1>Leave the hospital with a plan, not a pile of paper.</h1>
+  <p>Recovery Reminder reads your discharge papers and turns them into a daily plan: medication reminders, appointments, diet, and warning signs. Family and doctors can follow along.</p>
+  <div class="steps"><div><b>1. Scan</b><br>Photo or PDF</div><div><b>2. Confirm</b><br>You check it first</div><div><b>3. Recover</b><br>Daily reminders</div></div></div>
+  <div class="card"><h2>Scan your discharge papers</h2>
   <p>Take a photo or upload a PDF. We'll pull out medications, appointments, diet and warning signs. You'll confirm everything before any reminders start.</p>
   <input type="file" id="f" accept="application/pdf,image/*" capture="environment">
   <p id="msg" class="mut"></p>
-  <button id="go">Read my papers</button> <button class="ghost" id="demo">Try with sample papers</button></div>`;
+  <button id="go">Read my papers</button> <button class="ghost" id="demo">Try with sample papers</button></div>
+  <p class="mut">Reminds you of what your care team already told you. It never gives medical advice.</p>`;
   const run = async file => {
     $("#msg").textContent = "Reading your papers…";
     const fd = new FormData(); if (file) fd.append("file", file);
@@ -110,6 +114,28 @@ function viewToday() {
     if (e.target.dataset.l) { const [k, s] = e.target.dataset.l.split(/\|(?=[^|]*$)/); state.log[k] = s; persist(); render(); }
     if (e.target.dataset.say) speak(e.target.dataset.say);
   };
+}
+
+/* ---------- Ask about my plan ---------- */
+let chat = [];
+function viewAsk() {
+  $("#app").innerHTML = `<div class="card"><h2>Ask about your plan</h2>
+  <p class="mut">I only answer from your confirmed discharge papers. For anything else, ask your care team.</p>
+  <div id="chat">${chat.map(m => `<div class="dose"><b class="time">${m.me ? "You" : "Helper"}</b><span style="flex:1;white-space:pre-wrap">${esc(m.t)}</span></div>`).join("")}</div>
+  <div class="row"><input id="q" placeholder="e.g. When is my next pill?"><button id="send">Ask</button></div>
+  <div class="row">${["When is my next pill?", "What appointments do I have?", "Can I lift groceries?", "What should I eat?", "When should I call the doctor?"].map(x => `<button class="ghost" data-q="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>`;
+  const ask = async text => {
+    if (!text.trim()) return; chat.push({ me: true, t: text }); chat.push({ t: "…" }); viewAsk();
+    try {
+      const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: text, plan: state.plan, now: new Date().toLocaleString() }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j.error);
+      chat[chat.length - 1] = { t: j.answer }; if (state.voice) speak(j.answer);
+    } catch (e) { chat[chat.length - 1] = { t: "Sorry, something went wrong: " + e.message }; }
+    viewAsk();
+  };
+  $("#send").onclick = () => ask($("#q").value);
+  $("#q").onkeydown = e => { if (e.key === "Enter") ask(e.target.value); };
+  $("#app").onclick = e => { if (e.target.dataset.q) ask(e.target.dataset.q); };
 }
 
 /* ---------- Check-in & red flags ---------- */

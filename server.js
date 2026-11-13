@@ -21,7 +21,7 @@ const ALLOWED = new Set(["application/pdf", "image/jpeg", "image/png", "image/we
 
 const HAS_AI = () => !!(process.env.ANTHROPIC_API_KEY || process.env.GEMINI_API_KEY);
 // Claude if ANTHROPIC_API_KEY is set, else Gemini (free tier) if GEMINI_API_KEY is set.
-async function askModel({ prompt, file, max = 4096 }) {
+async function askModel({ prompt, file, max = 4096, json = true }) {
   if (process.env.ANTHROPIC_API_KEY) {
     const content = [];
     if (file) {
@@ -41,7 +41,7 @@ async function askModel({ prompt, file, max = 4096 }) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
-    body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseMimeType: "application/json", maxOutputTokens: max } }),
+    body: JSON.stringify({ contents: [{ parts }], generationConfig: { ...(json ? { responseMimeType: "application/json" } : {}), maxOutputTokens: max } }),
   });
   const j = await r.json();
   if (!r.ok) throw new Error(j.error?.message || "Gemini request failed");
@@ -86,6 +86,35 @@ app.post("/api/meals", rateLimit, async (req, res) => {
       `Diet rules from a patient's discharge papers: ${JSON.stringify(rules)}. Suggest a 3-day sample meal plan that follows them strictly. Return ONLY JSON: {"meals":[{"day":"","breakfast":"","lunch":"","dinner":"","grocery":[""]}]}. These are suggestions only; do not give medical advice.` });
     res.json({ demo: false, ...JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)) });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+const SAFE = "Please ask your care team (call your doctor or nurse) about that. I can only repeat what is in your discharge papers.";
+function fallbackAnswer(q, plan) {
+  q = q.toLowerCase(); const out = [];
+  // Never answer questions about changing/combining/missing doses: that's medical advice.
+  if (/double|extra|skip|stop|quit|increase|decrease|more|less|instead|miss|forgot|missed|safe|mix|together|alcohol|pregnan|allerg|side effect|overdose|crush|split/.test(q)) return SAFE;
+  const L = (a, f) => (a || []).map(f).join("\n");
+  if (/pill|dose|medic|take|drug|when/.test(q)) out.push("Your medications:\n" + L(plan.medications, m => `• ${m.name} ${m.dose || ""} at ${(m.times || []).join(", ")}${m.durationDays ? " for " + m.durationDays + " days" : ""}${m.withFood === "with" ? " (with food)" : ""}`));
+  if (/appoint|doctor|visit|follow|therapy|where/.test(q)) out.push("Your appointments:\n" + L(plan.appointments, a => `• ${a.title}: ${a.date} ${a.time}, ${a.location}${a.prep ? ". " + a.prep : ""}`));
+  if (/lift|activity|exercise|walk|drive|work|carry/.test(q)) out.push("Activity limits from your papers:\n" + L(plan.activity, a => `• ${a.rule}`) + (plan.exercises?.length ? "\n" + L(plan.exercises, e => `• ${e.name}: ${e.frequency}`) : ""));
+  if (/eat|diet|food|salt|drink/.test(q)) out.push("Diet rules from your papers:\n" + L(plan.diet, d => `• ${d.rule}`));
+  if (/fever|pain|bleed|swell|symptom|warning|emergency|worse|chest/.test(q)) out.push("Warning signs listed in your papers. Contact your doctor if you notice:\n" + L(plan.redFlags, r => `• ${r.symptom}`) + "\nIf it is an emergency, call 911.");
+  return out.length ? out.join("\n\n") : SAFE;
+}
+app.post("/api/chat", rateLimit, async (req, res) => {
+  const { question, plan, now } = req.body || {};
+  if (!question || !plan) return res.status(400).json({ error: "Missing question or plan" });
+  const q = String(question).slice(0, 500), planStr = JSON.stringify(plan).slice(0, 20000);
+  if (!HAS_AI()) return res.json({ demo: true, answer: fallbackAnswer(q, plan) });
+  try {
+    const answer = await askModel({ json: false, max: 700, prompt:
+      `You are a reminder assistant for a patient. Current time: ${now || "unknown"}.
+Answer ONLY using the confirmed discharge plan below. Use simple, short, kind language (patient may be elderly).
+Rules: never give your own medical advice, never suggest changing, skipping or adding any medication or dose, never diagnose. If the plan does not answer it, say: "${SAFE}" If the question suggests a warning sign from the plan, tell them to contact their doctor (911 for emergencies).
+PLAN: ${planStr}
+QUESTION: ${q}` });
+    res.json({ demo: false, answer });
+  } catch (e) { console.error(e); res.status(500).json({ error: e.message }); }
 });
 
 function samplePlan() {
