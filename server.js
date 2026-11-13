@@ -34,16 +34,22 @@ async function askModel({ prompt, file, max = 4096, json = true }) {
     const msg = await new Anthropic().messages.create({ model: "claude-sonnet-5-5", max_tokens: max, messages: [{ role: "user", content }] });
     return msg.content.filter(c => c.type === "text").map(c => c.text).join("");
   }
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const parts = [];
   if (file) parts.push({ inline_data: { mime_type: file.mimetype, data: file.buffer.toString("base64") } });
   parts.push({ text: prompt });
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
-    body: JSON.stringify({ contents: [{ parts }], generationConfig: { ...(json ? { responseMimeType: "application/json" } : {}), maxOutputTokens: max } }),
-  });
-  const j = await r.json();
+  let r, j;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+      body: JSON.stringify({ contents: [{ parts }], generationConfig: { ...(json ? { responseMimeType: "application/json" } : {}), maxOutputTokens: max } }),
+      signal: AbortSignal.timeout(40000),
+    });
+    j = await r.json();
+    if (r.status !== 429 && r.status !== 503) break;     // retry only on overload/rate limit
+    await new Promise(res => setTimeout(res, 2000 * (attempt + 1)));
+  }
   if (!r.ok) throw new Error(j.error?.message || "Gemini request failed");
   return (j.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("");
 }
