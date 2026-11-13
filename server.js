@@ -94,7 +94,7 @@ app.post("/api/meals", rateLimit, async (req, res) => {
     const t = await askModel({ max: 2000, prompt:
       `Diet rules from a patient's discharge papers: ${JSON.stringify(rules)}. Suggest a 3-day sample meal plan that follows them strictly. Return ONLY JSON: {"meals":[{"day":"","breakfast":"","lunch":"","dinner":"","grocery":[""]}]}. These are suggestions only; do not give medical advice.` });
     res.json({ demo: false, ...JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1)) });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { console.error(e.message); res.json({ demo: true, ...fallback }); }
 });
 
 const SAFE = "Please ask your care team (call your doctor or nurse) about that. I can only repeat what is in your discharge papers.";
@@ -123,7 +123,7 @@ Rules: never give your own medical advice, never suggest changing, skipping or a
 PLAN: ${planStr}
 QUESTION: ${q}` });
     res.json({ demo: false, answer });
-  } catch (e) { console.error(e); res.status(500).json({ error: e.message }); }
+  } catch (e) { console.error(e.message); res.json({ demo: true, answer: fallbackAnswer(q, plan) }); }
 });
 
 function samplePlan() {
