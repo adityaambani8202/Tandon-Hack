@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            style="@style/HS.Text.Headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your medicines" />
+
+        <TextView
+            style="@style/HS.Text.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:text="Tap Taken after each dose. Your phone will remind you at each time, even when Medly is closed." />
+
+        <!-- Filled in by MedsFragment.java -->
+        <LinearLayout
+            android:id="@+id/meds_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_add_med"
+            style="@style/HS.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Add a medicine"
+            app:icon="@drawable/ic_add" />
+
+        <!-- Say "Tylenol at 8:45 PM" and a reminder is set -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_say_med"
+            style="@style/HS.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Say it: &quot;Tylenol at 8:45 PM&quot;"
+            app:icon="@drawable/ic_mic" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_test_alert"
+            style="@style/HS.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Send a test reminder (10 seconds)"
+            app:icon="@drawable/ic_clock" />
+    </LinearLayout>
+</ScrollView>

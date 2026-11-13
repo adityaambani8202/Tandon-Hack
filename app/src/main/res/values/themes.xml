@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ===== App theme ===== -->
+    <style name="Theme.HomeStretch" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/teal</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/teal_soft</item>
+        <item name="colorOnPrimaryContainer">@color/teal_dark</item>
+        <item name="colorSecondary">@color/teal</item>
+        <item name="colorSecondaryContainer">@color/teal_soft</item>
+        <item name="colorOnSecondaryContainer">@color/teal_dark</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorOnSurfaceVariant">@color/ink_soft</item>
+        <item name="colorOutline">@color/line</item>
+        <item name="colorError">@color/coral</item>
+        <item name="android:colorBackground">@color/cream</item>
+        <item name="android:windowBackground">@color/cream</item>
+        <item name="android:statusBarColor">@color/cream</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+        <item name="materialButtonStyle">@style/HS.Button</item>
+        <item name="materialCardViewStyle">@style/HS.Card</item>
+    </style>
+
+    <!-- ===== Text: bigger than usual so it's easy to read ===== -->
+    <style name="HS.Text" parent="">
+        <item name="android:textColor">@color/ink</item>
+    </style>
+    <style name="HS.Text.Display">
+        <item name="android:textSize">34sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="HS.Text.Headline">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="HS.Text.Title">
+        <item name="android:textSize">21sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="HS.Text.TitleSmall">
+        <item name="android:textSize">19sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="HS.Text.Body">
+        <item name="android:textSize">18sp</item>
+        <item name="android:lineSpacingExtra">4sp</item>
+    </style>
+    <style name="HS.Text.Small">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/ink_soft</item>
+        <item name="android:lineSpacingExtra">3sp</item>
+    </style>
+    <style name="HS.Text.Label">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/ink_soft</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <!-- Section heading like "Up next" -->
+    <style name="HS.Text.Section">
+        <item name="android:textSize">21sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+    </style>
+    <!-- Small rounded label, e.g. "Day 4 of recovery" -->
+    <style name="HS.Text.Pill">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/teal_dark</item>
+        <item name="android:background">@drawable/bg_pill</item>
+        <item name="android:backgroundTint">@color/teal_soft</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+    </style>
+
+    <!-- ===== Buttons: tall and easy to tap ===== -->
+    <style name="HS.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">60dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">18dp</item>
+        <item name="iconSize">24dp</item>
+        <item name="iconPadding">10dp</item>
+        <item name="iconGravity">textStart</item>
+    </style>
+    <style name="HS.Button.Green">
+        <item name="backgroundTint">@color/leaf</item>
+    </style>
+    <style name="HS.Button.Red">
+        <item name="backgroundTint">@color/coral</item>
+    </style>
+    <style name="HS.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">60dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/teal_dark</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">18dp</item>
+        <item name="strokeWidth">2dp</item>
+        <item name="strokeColor">@color/line</item>
+        <item name="iconTint">@color/teal_dark</item>
+        <item name="iconSize">24dp</item>
+        <item name="iconPadding">10dp</item>
+        <item name="iconGravity">textStart</item>
+    </style>
+    <style name="HS.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/teal_dark</item>
+    </style>
+
+    <!-- ===== Cards: soft, rounded, no heavy shadows ===== -->
+    <style name="HS.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardCornerRadius">24dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
+        <item name="strokeColor">@color/line</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="contentPadding">20dp</item>
+    </style>
+    <style name="HS.Card.Filled">
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <!-- Round icon "badge" -->
+    <style name="HS.Badge" parent="">
+        <item name="android:layout_width">52dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:padding">13dp</item>
+        <item name="android:background">@drawable/bg_circle</item>
+    </style>
+</resources>

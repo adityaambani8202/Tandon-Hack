@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only 4 tabs so the bottom bar never feels crowded -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/tab_today" android:icon="@drawable/ic_home" android:title="Today" />
+    <item android:id="@+id/tab_meds" android:icon="@drawable/ic_medicine" android:title="Medicines" />
+    <item android:id="@+id/tab_visits" android:icon="@drawable/ic_calendar" android:title="Visits" />
+    <item android:id="@+id/tab_checkin" android:icon="@drawable/ic_heart" android:title="Check-in" />
+</menu>

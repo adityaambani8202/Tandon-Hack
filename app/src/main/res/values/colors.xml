@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Warm, calm, high-contrast colors. Change these to restyle the whole app. -->
+<resources>
+    <color name="teal">#2A7F7A</color>
+    <color name="teal_dark">#1E5E5A</color>
+    <color name="teal_soft">#D8EEEC</color>
+    <color name="cream">#FBF8F3</color>
+    <color name="peach">#F4A261</color>
+    <color name="peach_soft">#FDEBDD</color>
+    <color name="peach_dark">#9A4F12</color>
+    <color name="coral">#C94540</color>
+    <color name="coral_soft">#FBE3E2</color>
+    <color name="leaf">#2F8A4F</color>
+    <color name="leaf_soft">#E0F2E6</color>
+    <color name="ink">#1F2A2E</color>
+    <color name="ink_soft">#55656A</color>
+    <color name="line">#E4DDD2</color>
+    <color name="sand">#F2EEE7</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_faded">#4DFFFFFF</color>
+    <color name="ic_launcher_background">#2A7F7A</color>
+</resources>

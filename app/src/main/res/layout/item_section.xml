@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Group heading like "Morning" or "Medicines" with a small icon -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/text_section"
+    style="@style/HS.Text.Section"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:drawablePadding="10dp"
+    android:gravity="center_vertical"
+    app:drawableTint="@color/teal" />

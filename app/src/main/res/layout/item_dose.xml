@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One medicine card: name, what it's for, when, and big Taken / Skip buttons -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/HS.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                style="@style/HS.Badge"
+                android:backgroundTint="@color/teal_soft"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_medicine"
+                app:tint="@color/teal" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_name"
+                    style="@style/HS.Text.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_purpose"
+                    style="@style/HS.Text.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/button_speak"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Read aloud"
+                android:padding="14dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_speaker"
+                app:tint="@color/teal" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_instruction"
+            style="@style/HS.Text.Body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/text_when"
+            style="@style/HS.Text.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            app:drawableStartCompat="@drawable/ic_clock"
+            app:drawableTint="@color/ink_soft" />
+
+        <!-- Shown while the dose is still to do -->
+        <LinearLayout
+            android:id="@+id/row_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_taken"
+                style="@style/HS.Button.Green"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="Taken"
+                app:icon="@drawable/ic_check" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_skip"
+                style="@style/HS.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Skip" />
+        </LinearLayout>
+
+        <!-- Shown after Taken or Skip -->
+        <LinearLayout
+            android:id="@+id/row_done"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_box"
+            android:backgroundTint="@color/leaf_soft"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="4dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/text_done"
+                style="@style/HS.Text.TitleSmall"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="10dp"
+                android:gravity="center_vertical"
+                app:drawableStartCompat="@drawable/ic_check_circle" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_undo"
+                style="@style/HS.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Undo" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

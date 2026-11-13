@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/HS.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/date_badge"
+                layout="@layout/view_date_badge" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_title"
+                    style="@style/HS.Text.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_who"
+                    style="@style/HS.Text.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/text_time"
+                    style="@style/HS.Text.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    app:drawableStartCompat="@drawable/ic_clock"
+                    app:drawableTint="@color/teal" />
+
+                <TextView
+                    android:id="@+id/text_place"
+                    style="@style/HS.Text.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    app:drawableStartCompat="@drawable/ic_location"
+                    app:drawableTint="@color/teal" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- "Before you go" note -->
+        <TextView
+            android:id="@+id/text_prep"
+            style="@style/HS.Text.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_box"
+            android:backgroundTint="@color/peach_soft"
+            android:drawablePadding="10dp"
+            android:gravity="center_vertical"
+            android:padding="14dp"
+            app:drawableStartCompat="@drawable/ic_info"
+            app:drawableTint="@color/peach_dark" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_calendar"
+                style="@style/HS.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="Calendar"
+                app:icon="@drawable/ic_calendar" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_directions"
+                style="@style/HS.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Directions"
+                app:icon="@drawable/ic_location" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Send discharge papers to the Medly AI server -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Medicine reminders -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Exact alarms so "8:45 PM" rings at 8:45, not "sometime around then" -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.HomeStretch">
+        <!-- usesCleartextTraffic: lets the app reach a server on your laptop (http://).
+             Turn it off once the server is on https (e.g. Render). -->
+
+        <!-- Main screen with the 4 bottom tabs -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Scan discharge papers -->
+        <activity android:name=".ui.ScanActivity" android:exported="false" />
+
+        <!-- Double-check what was found -->
+        <activity android:name=".ui.ConfirmActivity" android:exported="false" />
+
+        <!-- Shows the reminder when an alarm goes off -->
+        <receiver
+            android:name=".alerts.ReminderReceiver"
+            android:exported="false" />
+
+        <!-- Sets the alarms again after the phone restarts -->
+        <receiver
+            android:name=".alerts.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Lets the camera save a full-size photo of the papers -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>

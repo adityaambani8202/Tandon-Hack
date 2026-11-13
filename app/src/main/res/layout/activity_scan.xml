@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cream"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_back"
+            style="@style/HS.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-12dp"
+            android:text="Back"
+            app:icon="@drawable/ic_back"
+            app:iconTint="@color/teal_dark" />
+
+        <!-- ===== Choose how to add papers ===== -->
+        <LinearLayout
+            android:id="@+id/group_choose"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                style="@style/HS.Badge"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp"
+                android:padding="24dp"
+                android:backgroundTint="@color/teal_soft"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_document"
+                app:tint="@color/teal" />
+
+            <TextView
+                style="@style/HS.Text.Headline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Add your discharge papers" />
+
+            <TextView
+                style="@style/HS.Text.Body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"
+                android:text="Take a photo or upload a PDF. We'll find your medicines, visits and care instructions. Then you check it over."
+                android:textColor="@color/ink_soft" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_photo"
+                style="@style/HS.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="68dp"
+                android:text="Take a photo"
+                app:icon="@drawable/ic_camera" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_upload"
+                style="@style/HS.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:minHeight="68dp"
+                android:text="Upload a file"
+                app:icon="@drawable/ic_upload" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_sample"
+                style="@style/HS.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:text="Try with sample papers" />
+
+            <TextView
+                style="@style/HS.Text.Small"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_box"
+                android:backgroundTint="@color/sand"
+                android:drawablePadding="10dp"
+                android:gravity="center_vertical"
+                android:padding="14dp"
+                android:text="Tip: lay each page flat in good light."
+                app:drawableStartCompat="@drawable/ic_info"
+                app:drawableTint="@color/ink_soft" />
+        </LinearLayout>
+
+        <!-- ===== "Reading your papers..." ===== -->
+        <LinearLayout
+            android:id="@+id/group_reading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="120dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                app:indicatorSize="64dp"
+                app:trackThickness="6dp" />
+
+            <TextView
+                style="@style/HS.Text.Headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Reading your papers…" />
+
+            <TextView
+                style="@style/HS.Text.Body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="This only takes a moment."
+                android:textColor="@color/ink_soft" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
