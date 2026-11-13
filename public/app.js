@@ -142,7 +142,7 @@ function viewAsk() {
 function redFlagAlerts() {
   const last = state.checkins[state.checkins.length - 1]; if (!last || last.date !== today()) return "";
   const hits = matchFlags(last);
-  return hits.length ? `<div class="alert">⚠️ You reported something your care team listed as a warning sign: ${hits.map(h => esc(h.symptom)).join("; ")}.<br>Please contact your doctor now. If it is an emergency, call 911. Your caregiver has been notified.</div>` : "";
+  return hits.length ? `<div class="alert">⚠️ You reported something your care team listed as a warning sign: ${hits.map(h => esc(h.symptom)).join("; ")}.<br>Please contact your doctor now. If it is an emergency, call 911. Let your caregiver know. They can see this alert in Caregiver view.</div>` : "";
 }
 function matchFlags(c) {
   const txt = (c.notes || "").toLowerCase() + (c.fever ? " fever" : "") + (c.swelling ? " swelling" : "");
