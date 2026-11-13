@@ -39,12 +39,12 @@ async function askModel({ prompt, file, max = 4096, json = true }) {
   if (file) parts.push({ inline_data: { mime_type: file.mimetype, data: file.buffer.toString("base64") } });
   parts.push({ text: prompt });
   let r, j;
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
       body: JSON.stringify({ contents: [{ parts }], generationConfig: { ...(json ? { responseMimeType: "application/json" } : {}), maxOutputTokens: max } }),
-      signal: AbortSignal.timeout(40000),
+      signal: AbortSignal.timeout(30000),
     });
     j = await r.json();
     if (r.status !== 429 && r.status !== 503) break;     // retry only on overload/rate limit
@@ -75,8 +75,11 @@ app.post("/api/extract", rateLimit, upload.single("file"), async (req, res) => {
     const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
     res.json({ demo: false, plan: json });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Could not read document: " + e.message });
+    console.error(e.message);
+    const busy = /timeout|abort|overload|high demand|unavailable|quota|429|503/i.test(e.message);
+    res.status(busy ? 503 : 500).json({ error: busy
+      ? "The AI reader is busy right now. Please try again in a minute, or tap \"Try with sample papers\" to see the full app."
+      : "Could not read this document. Try a clearer photo or a PDF." });
   }
 });
 
