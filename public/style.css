@@ -18,3 +18,4 @@ input,select,textarea{font:inherit;padding:10px;border-radius:10px;border:1px so
 .alert{border:2px solid var(--bad);background:#fbdcdc;color:#6b0f11;border-radius:12px;padding:14px;margin-bottom:14px;font-weight:600}
 .banner{background:#fdecc8;color:#5c3900;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:.85em}
 label{display:block;font-size:.85em;color:var(--mut);margin:8px 0 2px}
+.hero h1{font-size:1.7rem;line-height:1.2}.steps{display:flex;gap:10px;flex-wrap:wrap}.steps>div{flex:1 1 140px;background:var(--bg);border-radius:10px;padding:10px;font-size:.85em}
