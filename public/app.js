@@ -49,6 +49,8 @@ function upload() {
 }
 
 /* ---------- Confirm (editable) ---------- */
+const quote = x => x.sourceQuote ? `<div class="mut">“${esc(x.sourceQuote)}” (${esc(x.source)})</div>` : "";
+
 function confirmScreen() {
   const p = state.plan;
   const med = (m, i) => `<div class="card"><b>${esc(m.name)}</b> <span class="mut">${esc(m.source)}</span>
@@ -57,20 +59,20 @@ function confirmScreen() {
     <label>Times (24h, comma separated)</label><input data-k="medications.${i}.times" value="${esc((m.times || []).join(", "))}">
     <div class="row"><div><label>Days (blank = ongoing)</label><input data-k="medications.${i}.durationDays" value="${esc(m.durationDays ?? "")}"></div>
     <div><label>Food</label><select data-k="medications.${i}.withFood">${["any", "with", "without"].map(o => `<option ${m.withFood === o ? "selected" : ""}>${o}</option>`).join("")}</select></div></div>
-    <p class="mut">${esc(m.plainLanguage || m.instructions)}</p><button class="bad" data-del="medications.${i}">Remove</button></div>`;
+    <p class="mut">${esc(m.plainLanguage || m.instructions)}</p>${quote(m)}<button class="bad" data-del="medications.${i}">Remove</button></div>`;
   const appt = (a, i) => `<div class="card"><b>${esc(a.title)}</b> <span class="mut">${esc(a.source)}</span>
     <div class="row"><input data-k="appointments.${i}.date" type="date" value="${esc(a.date)}"><input data-k="appointments.${i}.time" type="time" value="${esc(a.time)}"></div>
     <label>Location</label><input data-k="appointments.${i}.location" value="${esc(a.location)}">
-    <label>What to bring / prepare</label><input data-k="appointments.${i}.prep" value="${esc(a.prep)}">
+    <label>What to bring / prepare</label><input data-k="appointments.${i}.prep" value="${esc(a.prep)}">${quote(a)}
     <button class="bad" data-del="appointments.${i}">Remove</button></div>`;
   const list = (arr, f) => (arr || []).map(f).join("") || `<p class="mut">None found.</p>`;
   $("#app").innerHTML = `${state.demo ? `<div class="banner">Demo mode: sample data (no API key set).</div>` : ""}
   <div class="card"><h2>Please check this carefully</h2><p>Compare each item with your papers. Fix anything wrong. A nurse or caregiver can help. <b>Reminders start only after you confirm.</b></p></div>
   <h2>Medications</h2>${list(p.medications, med)}<button class="ghost" id="addmed">+ Add medication</button>
   <h2>Appointments</h2>${list(p.appointments, appt)}
-  <h2>Diet</h2>${list(p.diet, d => `<div class="card">${esc(d.rule)}<div class="mut">${esc(d.plainLanguage)} · ${esc(d.source)}</div></div>`)}
-  <h2>Activity limits</h2>${list(p.activity, d => `<div class="card">${esc(d.rule)}<div class="mut">${esc(d.plainLanguage)} · ${esc(d.source)}</div></div>`)}
-  <h2>Warning signs</h2>${list(p.redFlags, d => `<div class="card">⚠️ ${esc(d.symptom)} <span class="mut">${esc(d.source)}</span></div>`)}
+  <h2>Diet</h2>${list(p.diet, d => `<div class="card">${esc(d.rule)}<div class="mut">${esc(d.plainLanguage)} · ${esc(d.source)}</div>${quote(d)}</div>`)}
+  <h2>Activity limits</h2>${list(p.activity, d => `<div class="card">${esc(d.rule)}<div class="mut">${esc(d.plainLanguage)} · ${esc(d.source)}</div>${quote(d)}</div>`)}
+  <h2>Warning signs</h2>${list(p.redFlags, d => `<div class="card">⚠️ ${esc(d.symptom)} <span class="mut">${esc(d.source)}</span>${quote(d)}</div>`)}
   <div class="row"><button class="ok" id="confirm">Everything is correct. Start reminders</button><button class="ghost" id="redo">Start over</button></div>`;
   $("#app").onchange = e => {
     const k = e.target.dataset.k; if (!k) return; const [a, i, f] = k.split(".");

@@ -19,3 +19,6 @@ Data lives in browser localStorage (no accounts, no HIPAA-grade storage); caregi
 
 ## Deploy (Render)
 Push to GitHub → Render → New → Blueprint → select this repo (uses `render.yaml`). Add `ANTHROPIC_API_KEY` in the dashboard. Health check: `/healthz`. AI endpoints are rate limited (`RATE_LIMIT_PER_MIN`, default 10/IP).
+
+## Relationship to PLAN.md
+`PLAN.md` is the full mobile roadmap (React Native). This repo is the hackathon vertical slice built as a web app so it ships with a live URL. Safety rules carried over: nothing is scheduled until the user confirms, every item shows its source page and exact quote, no medical advice.

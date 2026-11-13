@@ -50,14 +50,14 @@ async function askModel({ prompt, file, max = 4096, json = true }) {
 
 const PROMPT = `You extract structured data from hospital discharge paperwork. Return ONLY valid JSON, no prose:
 {
- "medications":[{"name":"","dose":"","timesPerDay":1,"times":["08:00"],"withFood":"with|without|any","durationDays":null,"instructions":"","plainLanguage":"","source":"page N"}],
- "appointments":[{"title":"","date":"YYYY-MM-DD","time":"HH:MM","location":"","prep":"","source":"page N"}],
- "diet":[{"rule":"","plainLanguage":"","source":"page N"}],
- "activity":[{"rule":"","plainLanguage":"","source":"page N"}],
- "exercises":[{"name":"","frequency":"","source":"page N"}],
- "redFlags":[{"symptom":"","keywords":["fever"],"source":"page N"}]
+ "medications":[{"name":"","dose":"","timesPerDay":1,"times":["08:00"],"withFood":"with|without|any","durationDays":null,"instructions":"","plainLanguage":"","source":"page N","sourceQuote":"exact words from the document"}],
+ "appointments":[{"title":"","date":"YYYY-MM-DD","time":"HH:MM","location":"","prep":"","source":"page N","sourceQuote":"exact words from the document"}],
+ "diet":[{"rule":"","plainLanguage":"","source":"page N","sourceQuote":"exact words from the document"}],
+ "activity":[{"rule":"","plainLanguage":"","source":"page N","sourceQuote":"exact words from the document"}],
+ "exercises":[{"name":"","frequency":"","source":"page N","sourceQuote":"exact words from the document"}],
+ "redFlags":[{"symptom":"","keywords":["fever"],"source":"page N","sourceQuote":"exact words from the document"}]
 }
-Only include what is written in the document. Never invent or give medical advice. Use null/empty when unknown.`;
+Only include what is written in the document. For every item, sourceQuote must be the exact, verbatim text it came from. Never invent or give medical advice. Use null/empty when unknown.`;
 
 app.post("/api/extract", rateLimit, upload.single("file"), async (req, res) => {
   if (!HAS_AI()) return res.json({ demo: true, plan: samplePlan() });
@@ -121,19 +121,19 @@ function samplePlan() {
   const d = n => { const t = new Date(); t.setDate(t.getDate() + n); return t.toISOString().slice(0, 10); };
   return {
     medications: [
-      { name: "Lisinopril", dose: "10 mg", timesPerDay: 1, times: ["08:00"], withFood: "any", durationDays: null, instructions: "Take 1 tablet by mouth daily for hypertension", plainLanguage: "Blood pressure pill. One each morning.", source: "page 1" },
-      { name: "Metformin", dose: "500 mg", timesPerDay: 2, times: ["08:00", "20:00"], withFood: "with", durationDays: null, instructions: "Take 1 tablet BID with meals", plainLanguage: "Diabetes pill. Morning and evening, with food.", source: "page 1" },
-      { name: "Amoxicillin", dose: "500 mg", timesPerDay: 3, times: ["08:00", "14:00", "22:00"], withFood: "any", durationDays: 7, instructions: "Take 1 capsule TID x 7 days", plainLanguage: "Antibiotic. Three times a day for 7 days, then stop.", source: "page 2" },
+      { name: "Lisinopril", dose: "10 mg", timesPerDay: 1, times: ["08:00"], withFood: "any", durationDays: null, instructions: "Take 1 tablet by mouth daily for hypertension", sourceQuote: "Lisinopril 10 mg: Take 1 tablet by mouth daily for hypertension", plainLanguage: "Blood pressure pill. One each morning.", source: "page 1" },
+      { name: "Metformin", dose: "500 mg", timesPerDay: 2, times: ["08:00", "20:00"], withFood: "with", durationDays: null, instructions: "Take 1 tablet BID with meals", sourceQuote: "Metformin 500 mg: Take 1 tablet BID with meals", plainLanguage: "Diabetes pill. Morning and evening, with food.", source: "page 1" },
+      { name: "Amoxicillin", dose: "500 mg", timesPerDay: 3, times: ["08:00", "14:00", "22:00"], withFood: "any", durationDays: 7, instructions: "Take 1 capsule TID x 7 days", sourceQuote: "Amoxicillin 500 mg: Take 1 capsule TID x 7 days", plainLanguage: "Antibiotic. Three times a day for 7 days, then stop.", source: "page 2" },
     ],
     appointments: [
-      { title: "Cardiology follow-up", date: d(7), time: "10:30", location: "NYU Langone, 550 First Ave", prep: "Bring medication list. Do not eat after midnight.", source: "page 3" },
+      { title: "Cardiology follow-up", date: d(7), time: "10:30", location: "NYU Langone, 550 First Ave", prep: "Bring medication list. Do not eat after midnight.", source: "page 3", sourceQuote: "Cardiology follow-up in 1 week. NPO after midnight. Bring med list." },
       { title: "Physical therapy", date: d(3), time: "14:00", location: "Tandon PT Clinic", prep: "Wear loose clothing.", source: "page 3" },
     ],
-    diet: [{ rule: "Sodium restriction < 2g/day", plainLanguage: "Eat low-salt foods. Avoid canned soups and chips.", source: "page 2" }],
-    activity: [{ rule: "No lifting > 10 lbs x 6 weeks", plainLanguage: "Do not lift anything heavier than a gallon of milk for 6 weeks.", source: "page 2" }],
+    diet: [{ sourceQuote: "Diet: sodium restriction < 2g/day", rule: "Sodium restriction < 2g/day", plainLanguage: "Eat low-salt foods. Avoid canned soups and chips.", source: "page 2" }],
+    activity: [{ sourceQuote: "No lifting > 10 lbs x 6 weeks", rule: "No lifting > 10 lbs x 6 weeks", plainLanguage: "Do not lift anything heavier than a gallon of milk for 6 weeks.", source: "page 2" }],
     exercises: [{ name: "Ankle pumps", frequency: "10 reps, 3x daily", source: "page 3" }],
     redFlags: [
-      { symptom: "Fever over 101°F", keywords: ["fever", "chills"], source: "page 4" },
+      { sourceQuote: "Call your doctor for fever over 101°F", symptom: "Fever over 101°F", keywords: ["fever", "chills"], source: "page 4" },
       { symptom: "Chest pain or shortness of breath", keywords: ["chest pain", "short of breath", "breathless"], source: "page 4" },
       { symptom: "Bleeding or swelling at incision", keywords: ["bleeding", "swelling", "pus"], source: "page 4" },
     ],
